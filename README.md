@@ -1,2 +1,2 @@
 # haskell-chess
-A small terminal-based chess like so many others
+A small terminal-based chess written in Haskell
