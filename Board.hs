@@ -106,7 +106,9 @@ showBoard = unlines . map showLine
     where showLine = map showTile
 
 prettyPrintBoard :: Board -> String
-prettyPrintBoard board = unlines $ map (intersperse '|') (intersperse linebreak (board'' ++ ["-"++['A'..'H']]))
+prettyPrintBoard board =
+    unlines $ map (intersperse '|')
+                  (intersperse linebreak (board'' ++ ["-"++['A'..'H']]))
     where board'  = lines $ showBoard board
           board'' = zipWith (++) numbers board'
           linebreak = "---------"
