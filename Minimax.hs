@@ -18,7 +18,7 @@ getNextMove color = snd . (findBestMove color) . (genGameTree searchdepth color)
 
 
 {-
-   |Creates Gametree with possible movements
+   |Creates Gametree with possible movements 
     (State contains a board and the move to reach the board
 -}
 genGameTree :: Int -> PColor -> State -> Gametree
@@ -44,6 +44,5 @@ findBestMove color (Gametree state gs) = extremum values
 -- |Minimax evaluation of a gametree results in the total value of the tree
 evalGametree :: PColor -> Gametree -> Int
 evalGametree _     (Gametree (board,_) []) = boardValue board
-evalGametree color (Gametree (board,_) gs) =
-    boardValue board + comp (map (evalGametree (oponentColor color)) gs)
+evalGametree color (Gametree (board,_) gs) = boardValue board + comp (map (evalGametree (oponentColor color)) gs)
     where comp = if color == White then minimum else maximum -- Takes the minimum of oponent and maximum of own moves

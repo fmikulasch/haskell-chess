@@ -24,7 +24,7 @@ reachablePositions' board (Just (Piece Black Pawn)) pos@(x,1) =
     ++ filter (isOponent Black board) (map (positionPlus pos) [(1,1),(-1,1)])
 reachablePositions' board (Just (Piece White Pawn)) pos@(x,6) =
     filter (not . (isOponent White board)) [(x,5),(x,4)]
-    ++ filter (isOponent White board) (map (positionPlus pos) [(1,-1),(-1,-1)]
+    ++ filter (isOponent White board) (map (positionPlus pos) [(1,-1),(-1,-1)])
 -- Normal movement
 reachablePositions' board tile@(Just (Piece pc pt)) pos@(x,y) = case pt of
     Rook   -> iterateMovement board pos (movement tile)
