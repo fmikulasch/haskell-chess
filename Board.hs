@@ -3,6 +3,7 @@ module Board where
 import Data.Char (toUpper, isUpper, toLower, isDigit)
 import Data.List (elemIndex, intersperse)
 import Data.Tuple (swap)
+import Utils
 
 -- |Basic types and datas
 type Board = [[Tile]]
@@ -97,18 +98,16 @@ isOnBoard = (flip elem) tileNumbers
 
 -- |Show and read functions
 prettyPrint :: State -> String
-prettyPrint state = ' ' : ((intersperse ' ') . unlines $ board''' ++ [""] ++ captures'')
+prettyPrint state = board''' ++ "\n" ++ captures'' ++ "\n"
     where board      = stateBoard state
           board'     = lines $ showBoard board
           board''    = zipWith (++) numbers board'
-          board'''   = map (intersperse '|')
-                           (intersperse linebreak 
-                                        (board'' ++ ["-"++['A'..'H']]))
-          linebreak  = "---------"
+          board'''   = createTable (board'' ++ letters)
           numbers    = map show $ reverse [1..8]
+          letters    = ['-':['A'..'H']]
           captures   = captured state
-          captures'  = map ((:[]) . showPiece) captures
-          captures'' = [concat captures']
+          captures'  = map showPiece captures
+          captures'' = intersperse ' ' captures'
 
 readTile :: Char -> Tile
 readTile = readPiece

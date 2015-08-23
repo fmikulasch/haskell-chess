@@ -1,5 +1,14 @@
 module Utils where
 
+import Data.List
+
+createTable :: [String] -> String
+createTable s@(a:_) = (unlines . widen . columns . rows) s
+    where rows      = intersperse linebreak
+          linebreak = replicate (length a) '-'
+          columns   = map (intersperse '|')
+          widen     = map (((:) ' ') . (intersperse ' '))
+
 -- |takeWhile but including the first element that not meets the requirements
 takeWhileInclusive :: (a -> Bool) -> [a] -> [a]
 takeWhileInclusive _ [] = []
