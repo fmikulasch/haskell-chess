@@ -26,21 +26,20 @@ data PType = Pawn | Rook | Bishop | Knight | King | Queen deriving (Show, Eq)
 
 -- |Board definition
 initBoardStr :: String
-initBoardStr = unlines ["rnbkqbnr"
-                       ,"pppppppp"
-                       ,"        "
-                       ,"        "
-                       ,"        "
-                       ,"        "
+initBoardStr = unlines ["RNBQKBNR"
                        ,"PPPPPPPP"
-                       ,"RNBKQBNR"]
+                       ,"        "
+                       ,"        "
+                       ,"        "
+                       ,"        "
+                       ,"pppppppp"
+                       ,"rnbqkbnr"]
 
 initBoard :: Board
 initBoard = readBoard initBoardStr
 
 tileNumbers :: [Position]
-tileNumbers = [(x,y) | x <- [0..7], y <- [0..7]]
-
+tileNumbers = [(x,y) | x <- [0..7], y <- [0..7]] 
 oponentColor :: PColor -> PColor
 oponentColor Black = White
 oponentColor White = Black
@@ -97,6 +96,20 @@ isOnBoard = (flip elem) tileNumbers
 
 
 -- |Show and read functions
+prettyPrint :: State -> String
+prettyPrint state = ' ' : ((intersperse ' ') . unlines $ board''' ++ [""] ++ captures'')
+    where board      = stateBoard state
+          board'     = lines $ showBoard board
+          board''    = zipWith (++) numbers board'
+          board'''   = map (intersperse '|')
+                           (intersperse linebreak 
+                                        (board'' ++ ["-"++['A'..'H']]))
+          linebreak  = "---------"
+          numbers    = map show $ reverse [1..8]
+          captures   = captured state
+          captures'  = map ((:[]) . showPiece) captures
+          captures'' = [concat captures']
+
 readTile :: Char -> Tile
 readTile = readPiece
 
@@ -111,23 +124,9 @@ showBoard :: Board -> String
 showBoard = unlines . map showLine
     where showLine = map showTile
 
-prettyPrint :: State -> String
-prettyPrint state = unlines $ board''' ++ [""] ++ captures''
-    where board      = stateBoard state
-          board'     = lines $ showBoard board
-          board''    = zipWith (++) numbers board'
-          board'''   = map (intersperse '|')
-                           (intersperse linebreak 
-                                        (board'' ++ ["-"++['A'..'H']]))
-          linebreak  = "---------"
-          numbers    = map show $ reverse [1..8]
-          captures   = captured state
-          captures'  = intersperse " " (map ((:[]) . showPiece) captures)
-          captures'' = [concat captures']
-
 readPiece :: Char -> Maybe Piece
 readPiece c = fmap (Piece color) (lookup (toUpper c) typeMap)
-    where color = if isUpper c then White else Black
+    where color = if isUpper c then Black else White
 
 showPiece :: Piece -> Char
 showPiece (Piece pcolor ptype) = colorCase c

@@ -1,4 +1,4 @@
-module Moves where
+module Moves (isValidMove, reachablePositions) where
 
 import Board
 import Utils

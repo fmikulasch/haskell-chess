@@ -1,4 +1,4 @@
-module Game where
+module Game (game) where
 
 import Board
 import Moves

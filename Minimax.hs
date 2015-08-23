@@ -1,4 +1,4 @@
-module Minimax where
+module Minimax (getNextMove) where
 
 import Board
 import Eval
