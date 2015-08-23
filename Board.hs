@@ -63,7 +63,6 @@ insertTile tile (x,y) board = take y board ++ [newLine] ++ drop (y + 1) board
 deleteTile :: Position -> Board -> Board
 deleteTile = insertTile Nothing
 
-
 getTile :: Board -> Position -> Tile
 getTile b pos@(x,y) = if isOnBoard pos
                         then (b !! y) !! x

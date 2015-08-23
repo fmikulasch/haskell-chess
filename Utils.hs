@@ -17,3 +17,16 @@ tupleMinimum = tupleCompare (<)
 
 tupleCompare :: (a -> a -> Bool) -> [(a,b)] -> (a,b)
 tupleCompare c = foldr1 (\a@(v1,_) b@(v2,_) -> if c v1 v2 then a else b)
+
+-- |Returns a list of tuples with the biggest first value
+tupleMinima, tupleMaxima :: [(Int,a)] -> [(Int,a)]
+tupleMaxima = tupleExtrema (>)
+tupleMinima = tupleExtrema (<)
+
+tupleExtrema :: (Eq a) => (a -> a -> Bool) -> [(a,b)] -> [(a,b)]
+tupleExtrema c = foldr accumTuples []
+    where accumTuples t [] = [t]
+          accumTuples a@(v1,_) ts@((v2,_):_)
+            | v1 == v2  = a:ts
+            | c v1 v2   = [a]
+            | otherwise = ts
