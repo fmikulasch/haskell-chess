@@ -1,30 +1,25 @@
+module Game where
+
 import Board
 import Moves
 import Eval
 import Minimax
 import System.IO (hFlush, stdout)
 
-
--- |Starts the game with an empty State and White playing
-main = do
-    game (initBoard, id) White
-    return ()
-
 type Game = [State]
 
 -- |Main game loop
-game :: State -> PColor -> IO()
-game s@(board, lastMove) color = do
+game :: State -> IO()
+game state = do
+    let board = stateBoard state
+        color = turnOf state
     putStrLn ""
-    putStrLn $ prettyPrintBoard board
+    putStrLn $ prettyPrint state
     if ((abs . boardValue) board) >= 1000
-        then do winner board
-                return ()
+        then winner board
         else if color == White
-                then do playerMove s color
-                        return()
-                else do computerMove s color
-                        return()
+                then playerMove state
+                else computerMove state
 
 -- |Announces the winner and ends the game.
 winner :: Board -> IO ()
@@ -36,34 +31,41 @@ winner board = do
                         else "Black"
 
 -- |Calculates the ai move (Black Player)
-computerMove :: State -> PColor -> IO ()
-computerMove s@(board, _) color = do
-    let move = getNextMove color s
-    game (move board, move) (oponentColor color)
+computerMove :: State -> IO ()
+computerMove state = do
+    let board = stateBoard state
+        move@(from, to) = getNextMove state
+        move'           = updateBoard from to
+    game State 
+         { stateBoard= move' board
+         , lastMove =  move
+         , turnOf = oponentColor (turnOf state)
+         , captured = updateCaptured to board (captured state)
+         , whiteCanCastle = True
+         , blackCanCastle = True}
     return ()
 
--- |Asks for the player move
-playerMove :: State -> PColor -> IO ()
-playerMove s@(board, _) color= do
-    (from, to) <- getMove
-    let from' = readInputPosition from
-        to'   = readInputPosition to
-    if from' == Nothing || to' == Nothing
-        then do putStrLn "Please enter a valid move."
-                game s color
+-- |Asks for the players move
+playerMove :: State -> IO ()
+playerMove state = do
+    let board = stateBoard state
+        color = turnOf state
+    move@(from, to) <- getMove
+    if isValidMove from to board color
+        then do let move' = updateBoard from to
+                game State 
+                     { stateBoard= move' board
+                     , lastMove =  move
+                     , turnOf = oponentColor (turnOf state)
+                     , captured = updateCaptured to board (captured state)
+                     , whiteCanCastle = True
+                     , blackCanCastle = True}
                 return ()
-        else do
-            let (Just f) = from'
-                (Just t) = to'
-            if isValidMove f t board color
-                then do let move = updateBoard f t
-                        game (move board, move) (oponentColor color)
-                        return ()
-                else do putStrLn "The move you chose is not possible."
-                        game s color
-                        return ()
+        else do putStrLn "The move you chose is not possible."
+                playerMove state
+                return ()
 
-getMove :: IO (String, String)
+getMove :: IO Move
 getMove = do
     putStr "From: "
     hFlush stdout
@@ -71,4 +73,16 @@ getMove = do
     putStr "To: "
     hFlush stdout
     to <- getLine
-    return (from,to)
+    let from' = readInputPosition from
+        to'   = readInputPosition to
+    if from' == Nothing || to' == Nothing
+        then do putStrLn "Please enter a valid move."
+                getMove
+        else do let (Just f) = from'
+                    (Just t) = to'
+                return (f,t)
+
+updateCaptured :: Position -> Board -> [Piece] -> [Piece]
+updateCaptured pos board cs = update (getTile board pos) cs
+    where update Nothing cs = cs
+          update (Just t)  cs = t:cs

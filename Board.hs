@@ -5,9 +5,16 @@ import Data.List (elemIndex, intersperse)
 import Data.Tuple (swap)
 
 -- |Basic types and datas
-type State = (Board, Move)
-type Move  = Board -> Board
 type Board = [[Tile]]
+type Move  = (Position, Position)
+
+data State = State
+             { stateBoard     :: Board
+             , turnOf         :: PColor
+             , lastMove       :: Move
+             , captured       :: [Piece]
+             , whiteCanCastle :: Bool
+             , blackCanCastle :: Bool}
 
 type Tile  = Maybe Piece
 type Position = (Int,Int)
@@ -104,14 +111,19 @@ showBoard :: Board -> String
 showBoard = unlines . map showLine
     where showLine = map showTile
 
-prettyPrintBoard :: Board -> String
-prettyPrintBoard board =
-    unlines $ map (intersperse '|')
-                  (intersperse linebreak (board'' ++ ["-"++['A'..'H']]))
-    where board'  = lines $ showBoard board
-          board'' = zipWith (++) numbers board'
-          linebreak = "---------"
-          numbers = map show [1..8]
+prettyPrint :: State -> String
+prettyPrint state = unlines $ board''' ++ [""] ++ captures''
+    where board      = stateBoard state
+          board'     = lines $ showBoard board
+          board''    = zipWith (++) numbers board'
+          board'''   = map (intersperse '|')
+                           (intersperse linebreak 
+                                        (board'' ++ ["-"++['A'..'H']]))
+          linebreak  = "---------"
+          numbers    = map show $ reverse [1..8]
+          captures   = captured state
+          captures'  = intersperse " " (map ((:[]) . showPiece) captures)
+          captures'' = [concat captures']
 
 readPiece :: Char -> Maybe Piece
 readPiece c = fmap (Piece color) (lookup (toUpper c) typeMap)
@@ -131,7 +143,7 @@ readInputPosition (x:y:[]) = case pos of
                                 _                -> Nothing
     where pos = (xCord x, if isDigit y then yCord y else Nothing)
           xCord x = elemIndex (toUpper x) ['A'..'H']
-          yCord y = elemIndex (read [y] :: Int) [1..8]
+          yCord y = elemIndex (read [y] :: Int) $ reverse [1..8]
 readInputPosition _        = Nothing
 
 showInputPosition :: Position -> String

@@ -10,23 +10,24 @@ takeWhileInclusive p (x:xs) = x : if p x then takeWhileInclusive p xs
 positionPlus :: (Int, Int) -> (Int, Int) -> (Int, Int)
 positionPlus (x1, y1) (x2, y2) = (x1 + x2, y1 + y2)
 
--- |Returns the tuple with the biggest first value
-tupleMaximum, tupleMinimum :: [(Int,a)] -> (Int, a)
+-- |Returns a Bool with only the first values compared
+tupleEqual, tupleMaximum, tupleMinimum :: (Eq a, Ord a) => (a,b) -> (a,c) -> Bool
+tupleEqual   = tupleCompare (==)
 tupleMaximum = tupleCompare (>)
 tupleMinimum = tupleCompare (<)
 
-tupleCompare :: (a -> a -> Bool) -> [(a,b)] -> (a,b)
-tupleCompare c = foldr1 (\a@(v1,_) b@(v2,_) -> if c v1 v2 then a else b)
+tupleCompare :: (a -> a -> Bool) -> (a,b) -> (a,c) -> Bool
+tupleCompare c (v1,_) (v2,_) = c v1 v2
 
 -- |Returns a list of tuples with the biggest first value
 tupleMinima, tupleMaxima :: [(Int,a)] -> [(Int,a)]
-tupleMaxima = tupleExtrema (>)
-tupleMinima = tupleExtrema (<)
+tupleMaxima = tupleExtrema tupleMaximum
+tupleMinima = tupleExtrema tupleMinimum
 
-tupleExtrema :: (Eq a) => (a -> a -> Bool) -> [(a,b)] -> [(a,b)]
+tupleExtrema :: (Eq a, Ord a) => ((a,b) -> (a,b) -> Bool) -> [(a,b)] -> [(a,b)]
 tupleExtrema c = foldr accumTuples []
     where accumTuples t [] = [t]
-          accumTuples a@(v1,_) ts@((v2,_):_)
-            | v1 == v2  = a:ts
-            | c v1 v2   = [a]
-            | otherwise = ts
+          accumTuples a acc@(t:_)
+            | tupleEqual a t = a:acc
+            | c a t          = [a]
+            | otherwise      = acc
