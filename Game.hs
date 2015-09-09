@@ -15,7 +15,7 @@ game state = do
         color = turnOf state
     putStrLn ""
     putStrLn $ prettyPrint state
-    if ((abs . boardValue) board) >= 1000
+    if kingDown state
         then winner board
         else if color == White
                 then playerMove state
@@ -37,12 +37,12 @@ computerMove state = do
         move@(from, to) = getNextMove state
         move'           = updateBoard from to
     game State 
-         { stateBoard= move' board
+         { stateBoard = move' board
          , lastMove =  move
          , turnOf = oponentColor (turnOf state)
          , captured = updateCaptured to board (captured state)
-         , whiteCanCastle = True
-         , blackCanCastle = True}
+         , whiteCanCastle = updateCanCastle state move
+         , blackCanCastle = updateCanCastle state move}
     return ()
 
 -- |Asks for the players move
@@ -54,12 +54,12 @@ playerMove state = do
     if isValidMove from to board color
         then do let move' = updateBoard from to
                 game State 
-                     { stateBoard= move' board
+                     { stateBoard = move' board
                      , lastMove =  move
                      , turnOf = oponentColor (turnOf state)
                      , captured = updateCaptured to board (captured state)
-                     , whiteCanCastle = True
-                     , blackCanCastle = True}
+                     , whiteCanCastle = updateCanCastle state move
+                     , blackCanCastle = updateCanCastle state move}
                 return ()
         else do putStrLn "The move you chose is not possible."
                 playerMove state
@@ -84,5 +84,16 @@ getMove = do
 
 updateCaptured :: Position -> Board -> [Piece] -> [Piece]
 updateCaptured pos board cs = update (getTile board pos) cs
-    where update Nothing cs = cs
+    where update Nothing   cs = cs
           update (Just t)  cs = t:cs
+
+updateCanCastle :: State -> Move -> Bool
+updateCanCastle state move = b && update color (fst move)
+    where color              = turnOf state
+          update White (4,7) = False
+          update Black (4,0) = False
+          update _     _     = True
+          b = case color of
+                White -> whiteCanCastle state
+                Black -> blackCanCastle state
+          

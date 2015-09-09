@@ -1,7 +1,7 @@
 module Board where
 
 import Data.Char (toUpper, isUpper, toLower, isDigit)
-import Data.List (elemIndex, intersperse)
+import Data.List (elemIndex, intersperse, sort)
 import Data.Tuple (swap)
 import Utils
 
@@ -41,6 +41,7 @@ initBoard = readBoard initBoardStr
 
 tileNumbers :: [Position]
 tileNumbers = [(x,y) | x <- [0..7], y <- [0..7]] 
+
 oponentColor :: PColor -> PColor
 oponentColor Black = White
 oponentColor White = Black
@@ -88,6 +89,9 @@ isSameColor :: Tile -> Tile -> Bool
 isSameColor (Just (Piece c1 _)) (Just (Piece c2 _)) = c1 == c2
 isSameColor _ _                                     = False
 
+isSameType :: PType -> Piece -> Bool
+isSameType t1 (Piece _ t2) = t1 == t2
+
 isPlayerPiece :: Board -> PColor -> Position -> Bool
 isPlayerPiece board pc pos = isSameColor (Just (Piece pc Pawn)) (getTile board pos)
 
@@ -98,16 +102,17 @@ isOnBoard = (flip elem) tileNumbers
 
 -- |Show and read functions
 prettyPrint :: State -> String
-prettyPrint state = board''' ++ "\n" ++ captures'' ++ "\n"
-    where board      = stateBoard state
-          board'     = lines $ showBoard board
-          board''    = zipWith (++) numbers board'
-          board'''   = createTable (board'' ++ letters)
-          numbers    = map show $ reverse [1..8]
-          letters    = ['-':['A'..'H']]
-          captures   = captured state
-          captures'  = map showPiece captures
-          captures'' = intersperse ' ' captures'
+prettyPrint state = board''' ++ "\n" ++ captures''' ++ "\n"
+    where board       = stateBoard state
+          board'      = lines $ showBoard board
+          board''     = zipWith (++) numbers board'
+          board'''    = createTable (board'' ++ letters)
+          numbers     = map show $ reverse [1..8]
+          letters     = ['-':['A'..'H']]
+          captures    = captured state
+          captures'   = map showPiece captures
+          captures''  = sort captures'
+          captures''' = intersperse ' ' captures''
 
 readTile :: Char -> Tile
 readTile = readPiece
@@ -145,4 +150,4 @@ readInputPosition (x:y:[]) = case pos of
 readInputPosition _        = Nothing
 
 showInputPosition :: Position -> String
-showInputPosition (x,y) = (['A'..] !! x) : show y
+showInputPosition (x,y) = (['A'..] !! x) : show (8 -y)

@@ -20,10 +20,10 @@ reachablePositions board pos@(x,y) = filter (\p -> isOnBoard p && differentColor
 reachablePositions' :: Board -> Tile -> Position -> [Position]
 -- If Black Pawn or White Pawn stands on baseline he con move two fields
 reachablePositions' board (Just (Piece Black Pawn)) pos@(x,1) =
-    filter (not . (isOponent Black board)) [(x,2),(x,3)]
+    takeWhile (not . (isOponent Black board)) [(x,2),(x,3)]
     ++ filter (isOponent Black board) (map (positionPlus pos) [(1,1),(-1,1)])
 reachablePositions' board (Just (Piece White Pawn)) pos@(x,6) =
-    filter (not . (isOponent White board)) [(x,5),(x,4)]
+    takeWhile (not . (isOponent White board)) [(x,5),(x,4)]
     ++ filter (isOponent White board) (map (positionPlus pos) [(1,-1),(-1,-1)])
 -- Normal movement
 reachablePositions' board tile@(Just (Piece pc pt)) pos@(x,y) = case pt of
@@ -53,7 +53,7 @@ movement :: Tile -> [Position]
 movement (Just (Piece White Pawn)) = [(0,-1)]
 movement (Just (Piece Black Pawn)) = [(0,1)]
 movement (Just (Piece _   Knight)) = [(a,b) | a <- q, b <- q, (a + b) `mod` 2 /= 0]
-    where q = [-2,-1,1,2]
+    where q = [-2..2]
 movement (Just (Piece _     Rook)) = straight
 movement (Just (Piece _   Bishop)) = diagonal
 movement (Just (Piece _    Queen)) = diagonal ++ straight

@@ -2,6 +2,12 @@ module Eval where
 
 import Utils
 import Board
+import Data.Char (toUpper)
+
+kingDown :: State -> Bool
+kingDown = (foldr hasKing False) . captured
+    where hasKing p b = b || isKing p
+          isKing      = isSameType King
 
 -- |Calculates the Numerical value of the board
 boardValue :: Board -> Int
