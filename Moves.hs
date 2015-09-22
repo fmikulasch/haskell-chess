@@ -53,7 +53,7 @@ movement :: Tile -> [Position]
 movement (Just (Piece White Pawn)) = [(0,-1)]
 movement (Just (Piece Black Pawn)) = [(0,1)]
 movement (Just (Piece _   Knight)) = [(a,b) | a <- q, b <- q, (a + b) `mod` 2 /= 0]
-    where q = [-2..2]
+    where q = [-2,-1,1,2]
 movement (Just (Piece _     Rook)) = straight
 movement (Just (Piece _   Bishop)) = diagonal
 movement (Just (Piece _    Queen)) = diagonal ++ straight
